@@ -1,3 +1,6 @@
 <Solution>
+  <Folder Name="/ソリューション項目/">
+    <File Path=".nojeky11" />
+  </Folder>
   <Project Path="LuckyRouletteApp/LuckyRouletteApp.csproj" />
 </Solution>
