@@ -1,0 +1,131 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>決定ルーレット</PageTitle>
+
+<div class="container">
+    <div class="roulette-box">
+        <div class="arrow">▼</div>
+
+        <div class="wheel" style="transform: rotate(@(angle)deg);">
+            @for (int i = 0; i < items.Length; i++)
+            {
+                <div class="sector" style="transform: rotate(@(i * (360 / items.Length))deg);">
+                    <span class="item-label">@items[i]</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-spin" @onclick="Spin" disabled="@isSpinning">
+            @(isSpinning ? "抽選中..." : "スタート！")
+        </button>
+        <p class="result">@resultText</p>
+    </div>
+</div>
+
+<style>
+    .container {
+        text-align: center;
+        font-family: sans-serif;
+    }
+
+    .roulette-box {
+        position: relative;
+        width: 320px;
+        height: 320px;
+        margin: 40px auto;
+    }
+
+    .arrow {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 40px;
+        color: #ff4757;
+        z-index: 10;
+    }
+
+    .wheel {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 8px solid #333;
+        position: relative;
+        overflow: hidden;
+        transition: transform 4s cubic-bezier(0.1, 0, 0.2, 1); /* 徐々に止まる動き */
+        background: conic-gradient(#ff6b6b 0 25%, #4bc0c0 25% 50%, #ff9f43 50% 75%, #4ea5ff 75% 100%);
+    }
+
+    .sector {
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        top: 0;
+        left: 50%;
+        transform-origin: bottom left;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-label {
+        transform: rotate(45deg); /* 文字を読みやすく傾ける */
+        font-weight: bold;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+    }
+
+    .btn-spin {
+        padding: 15px 40px;
+        font-size: 20px;
+        border-radius: 30px;
+        border: none;
+        background: #2ed573;
+        color: white;
+        cursor: pointer;
+    }
+
+        .btn-spin:disabled {
+            background: #ccc;
+        }
+
+    .result {
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
+        color: #333;
+    }
+</style>
+
+@code {
+    private double angle = 0;
+    private bool isSpinning = false;
+    private string resultText = "何が出るかな？";
+    private string[] items = { "ラーメン", "寿司", "カレー", "焼肉" };
+
+    private async Task Spin()
+    {
+        if (isSpinning) return;
+
+        isSpinning = true;
+        resultText = "抽選中...";
+
+        // 最低5回転 + ランダムな角度
+        int spinExtra = Random.Shared.Next(1800, 3600);
+        angle += spinExtra;
+
+        // アニメーションが終わるまで待つ（CSSのtransition 4sに合わせる）
+        await Task.Delay(4000);
+
+        // 当たり判定の計算
+        var finalAngle = angle % 360;
+        // 針は真上（0度）にあるので、回転した分を逆算して項目を特定
+        var itemIndex = (items.Length - (int)(finalAngle / (360.0 / items.Length))) % items.Length;
+
+        resultText = $"結果：{items[itemIndex]} です！";
+        isSpinning = false;
+    }
+}
